@@ -19,4 +19,7 @@ nytprof.out
 *.bs
 /_eumm/
 
+# idea folder
 .idea/
+# Perl Idea plugin
+_Deparsed_XSubs.pm
