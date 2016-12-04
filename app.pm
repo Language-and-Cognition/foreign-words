@@ -12,6 +12,8 @@ sub assert {
 
     my ($condition, $error_text) = @_;
     unless ($condition) {
+        my (undef, undef, $line) = caller;
+        print STDERR "WRONG ASSERTION ON LINE $line\n";
         die $error_text;
     }
 }
@@ -43,7 +45,8 @@ sub get_choices {
 
     my $count = 1;
 
-    while (my ($word, $translations) = each %$words) {
+    for my $word (keys %$words) {
+        my $translations = $words->{$word};
         next if $word eq $right_word;
 
         $result{$word} = $translations;
@@ -74,13 +77,40 @@ sub ask_word_to_translation {
         chomp($choice = <STDIN>);
 
         if ($choice == $right_choice_number) {
-            print "CORRECT!\n";
+            print "CORRECT!\n\n";
         } else {
             print "INCORRECT! RIGHT ANSWER IS:\n";
-            print "@{ $choices{$word} }\n";
+            print "@{ $choices{$word} }\n\n";
+        }
+    }
+}
+
+sub ask_translation_to_word {
+    my %words = @_;
+    my $right_choice_number;
+    for my $word (keys %words) {
+        my $translations = $words{$word};
+        print "@$translations\n\n";
+        my %choices = get_choices(\%words, $word, $NUMBER_OF_CHOICES_IN_QUESTION);
+        my @keys = keys(%choices);
+        while (my ($i, $key) = each @keys) {
+            printf "%d. %s\n", $i+1, "$key";
+            $right_choice_number = $i+1 if $key eq $word;
+        }
+
+        assert(defined $right_choice_number, '$right_choice_number IS UNDEFINED');
+
+        my $choice;
+        chomp($choice = <STDIN>);
+
+        if ($choice == $right_choice_number) {
+            print "CORRECT!\n\n";
+        } else {
+            print "INCORRECT! RIGHT ANSWER IS:\n";
+            print "$word\n\n";
         }
     }
 }
 
 my %words = get_words;
-ask_word_to_translation(%words);
+ask_translation_to_word(%words);
