@@ -23,3 +23,5 @@ nytprof.out
 .idea/
 # Perl Idea plugin
 _Deparsed_XSubs.pm
+# virtual environment
+.venv/
