@@ -1,5 +1,10 @@
 use strict;
 use warnings;
+use utf8;
+use open ':std', ':encoding(UTF-8)';
+
+use DBI;
+use JSON qw/ encode_json decode_json /;
 
 my $DEBUG = 1;
 
@@ -21,15 +26,15 @@ sub assert {
 assert($NUMBER_OF_WORDS_IN_BATCH >= $NUMBER_OF_CHOICES_IN_QUESTION, "CHOICES > BATCH");
 
 
-# TODO write and read json from a file
 sub get_words {
-    my %words = (
-        hi => ['привет'],
-        bye => ['пока'],
-        year => ['год'],
-        day => ['день'],
-        go => ['идти', 'передвигаться'],
-    );
+    my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
+    my $language = 'English';
+    # TODO SQL injection
+    my $rows = $dbh->selectall_arrayref("SELECT word, translation FROM $language;");
+    my %words;
+    for my $row (@$rows) {
+        $words{$row->[0]} = decode_json($row->[1]);
+    }
     return %words;
 }
 

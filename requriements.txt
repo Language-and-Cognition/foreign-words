@@ -1,0 +1,4 @@
+# Yes, I have Python background
+DBI
+DBD::SQLite
+JSON
