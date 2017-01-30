@@ -20,7 +20,7 @@ sub get_words {
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $language = 'English';
     # TODO SQL injection
-    my $rows = $dbh->selectall_arrayref("SELECT word, translation FROM $language;");
+    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress FROM $language;");
     my %words;
     for my $row (@$rows) {
         $words{$row->[0]} = decode_json($row->[1]);
