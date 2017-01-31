@@ -3,7 +3,7 @@ use strict;
 use warnings FATAL => 'all';
 
 use Exporter qw/ import /;
-our @EXPORT_OK = qw/ assert /;
+our @EXPORT_OK = qw/ assert trim /;
 
 my $DEBUG = 1;
 
@@ -16,6 +16,11 @@ sub assert {
         print STDERR "WRONG ASSERTION ON LINE $line\n";
         die $error_text;
     }
+}
+
+sub trim {
+    (my $s = $_[0]) =~ s/^\s+|\s+$//g;
+    return $s;
 }
 
 1;

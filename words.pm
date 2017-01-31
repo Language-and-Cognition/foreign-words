@@ -5,27 +5,49 @@ use warnings FATAL => 'all';
 use DBI;
 use JSON qw/ encode_json decode_json /;
 
-use utils qw/ assert /;
+use utils qw/ assert trim /;
 
 use Exporter qw/ import /;
-our @EXPORT_OK = qw/ get_choices get_words /;
+our @EXPORT_OK = qw/ get_choices
+                     get_words
+                     add_word
+                     NUMBER_OF_CHOICES_IN_QUESTION
+                     NUMBER_OF_WORDS_IN_BATCH /;
 
-my $NUMBER_OF_CHOICES_IN_QUESTION = 4;
-my $NUMBER_OF_WORDS_IN_BATCH = 5;
+use constant {
+    NUMBER_OF_CHOICES_IN_QUESTION => 4,
+    NUMBER_OF_WORDS_IN_BATCH => 5,
+};
+use constant LANGUAGE => 'English';
 
-assert($NUMBER_OF_WORDS_IN_BATCH >= $NUMBER_OF_CHOICES_IN_QUESTION, "CHOICES > BATCH");
+assert(NUMBER_OF_WORDS_IN_BATCH >= NUMBER_OF_CHOICES_IN_QUESTION, "CHOICES > BATCH");
 
 
 sub get_words {
+    # TODO make class from in order to reuse connection
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
-    my $language = 'English';
-    # TODO SQL injection
-    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress FROM $language;");
+    my $table = LANGUAGE;
+    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress FROM $table");
     my %words;
     for my $row (@$rows) {
         $words{$row->[0]} = decode_json($row->[1]);
     }
     return %words;
+}
+
+sub add_word {
+    my ($word, $translation) = @_;
+    $translation = _make_json_array_from_translation($translation);
+
+    my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
+    my $table = LANGUAGE;
+    $dbh->do("INSERT INTO $table (word, translation, progress) VALUES (?, ?, 0)", undef, $word, $translation);
+}
+
+sub _make_json_array_from_translation {
+    my ($translation_raw) = @_;
+    my @translations = map {trim $_} split(',', $translation_raw);
+    return encode_json \@translations;
 }
 
 sub get_choices {
