@@ -9,6 +9,7 @@ use utils qw/ assert trim /;
 
 use Exporter qw/ import /;
 our @EXPORT_OK = qw/ get_choices
+                     get_batch
                      get_words
                      add_word
                      NUMBER_OF_CHOICES_IN_QUESTION
@@ -32,7 +33,19 @@ sub get_words {
     for my $row (@$rows) {
         $words{$row->[0]} = decode_json($row->[1]);
     }
-    return %words;
+    return \%words;
+}
+
+sub get_batch {
+    my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
+    my $table = LANGUAGE;
+    # TODO take last learning time into account
+    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress FROM $table ORDER BY progress LIMIT ?", undef, NUMBER_OF_WORDS_IN_BATCH);
+    my %words;
+    for my $row (@$rows) {
+        $words{$row->[0]} = decode_json($row->[1]);
+    }
+    return \%words;
 }
 
 sub add_word {

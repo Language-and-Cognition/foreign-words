@@ -11,16 +11,16 @@ use Term::ReadLine;
 
 use utils qw/ assert /;
 use words qw/ get_choices
-              get_words
+              get_batch
               add_word
               NUMBER_OF_CHOICES_IN_QUESTION /;
 
 sub cli_main {
-    my %words = get_words;
+    my $words = get_batch;
     my $term = Term::ReadLine->new('foreign words', \*STDIN, \*STDOUT);
     while (defined(my $input = $term->readline('> '))) {
         if ($input eq 'learn') {
-            ask_translation_to_word(%words);
+            ask_translation_to_word($words);
         } elsif ($input eq 'help') {
             show_help();
         } elsif ($input eq 'add') {
@@ -32,11 +32,11 @@ sub cli_main {
 }
 
 sub ask_word_to_translation {
-    my %words = @_;
+    my ($words) = @_;
     my $right_choice_number;
-    for my $word (keys %words) {
+    for my $word (keys %$words) {
         print "$word\n\n";
-        my %choices = get_choices(\%words, $word, NUMBER_OF_CHOICES_IN_QUESTION);
+        my %choices = get_choices($words, $word, NUMBER_OF_CHOICES_IN_QUESTION);
         my @keys = keys(%choices);
         while (my ($i, $key) = each @keys) {
             my $translations = $choices{$key};
@@ -49,6 +49,7 @@ sub ask_word_to_translation {
         my $choice;
         chomp($choice = <STDIN>);
 
+        # TODO Filter user input
         if ($choice == $right_choice_number) {
             print "CORRECT!\n\n";
         } else {
@@ -59,12 +60,12 @@ sub ask_word_to_translation {
 }
 
 sub ask_translation_to_word {
-    my %words = @_;
+    my ($words) = @_;
     my $right_choice_number;
-    for my $word (keys %words) {
-        my $translations = $words{$word};
+    for my $word (keys %$words) {
+        my $translations = $words->{$word};
         print "@$translations\n\n";
-        my %choices = get_choices(\%words, $word, NUMBER_OF_CHOICES_IN_QUESTION);
+        my %choices = get_choices($words, $word, NUMBER_OF_CHOICES_IN_QUESTION);
         my @keys = keys(%choices);
         while (my ($i, $key) = each @keys) {
             printf "%d. %s\n", $i+1, "$key";
