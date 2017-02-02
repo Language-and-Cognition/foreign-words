@@ -28,7 +28,7 @@ sub get_words {
     # TODO make class from in order to reuse connection
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
-    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress FROM $table");
+    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress, last_success_time FROM $table");
     my %words;
     for my $row (@$rows) {
         $words{$row->[0]} = decode_json($row->[1]);
@@ -40,7 +40,7 @@ sub get_batch {
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
     # TODO take last learning time into account
-    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress FROM $table ORDER BY progress LIMIT ?", undef, NUMBER_OF_WORDS_IN_BATCH);
+    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress, last_success_time FROM $table ORDER BY progress LIMIT ?", undef, NUMBER_OF_WORDS_IN_BATCH);
     my %words;
     for my $row (@$rows) {
         $words{$row->[0]} = decode_json($row->[1]);
@@ -54,7 +54,15 @@ sub add_word {
 
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
-    $dbh->do("INSERT INTO $table (word, translation, progress) VALUES (?, ?, 0)", undef, $word, $translation);
+    $dbh->do("INSERT INTO $table (word, translation, progress, last_success_time) VALUES (?, ?, 0, 0)", undef, $word, $translation);
+}
+
+sub update_word_success_time {
+    my ($word) = @_;
+    my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
+    my $table = LANGUAGE;
+    # TODO time is not portable
+    $dbh->do("UPDATE $table SET progress = progress + 1, last_success_time = ? WHERE word = ?", undef, time(), $word);
 }
 
 sub _make_json_array_from_translation {
