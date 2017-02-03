@@ -5,7 +5,7 @@ use warnings FATAL => 'all';
 use DBI;
 use JSON qw/ encode_json decode_json /;
 
-use utils qw/ assert trim /;
+use utils qw/ assert trim current_time parse_time /;
 
 use Exporter qw/ import /;
 our @EXPORT_OK = qw/ get_choices
@@ -54,15 +54,15 @@ sub add_word {
 
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
-    $dbh->do("INSERT INTO $table (word, translation, progress, last_success_time) VALUES (?, ?, 0, 0)", undef, $word, $translation);
+    $dbh->do("INSERT INTO $table (word, translation, progress, last_success_time) VALUES (?, ?, 0, ?)",
+        undef, $word, $translation, parse_time('1970-01-01T00:00:00'));
 }
 
 sub update_word_success_time {
     my ($word) = @_;
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
-    # TODO time is not portable
-    $dbh->do("UPDATE $table SET progress = progress + 1, last_success_time = ? WHERE word = ?", undef, time(), $word);
+    $dbh->do("UPDATE $table SET progress = progress + 1, last_success_time = ? WHERE word = ?", undef, current_time(), $word);
 }
 
 sub _make_json_array_from_translation {
