@@ -1,11 +1,11 @@
-package words;
+package ForeignWords::Words;
 use strict;
 use warnings FATAL => 'all';
 
 use DBI;
 use JSON qw/ encode_json decode_json /;
 
-use utils qw/ assert trim current_time parse_time /;
+use  ForeignWords::Utils qw/ assert trim current_time parse_time /;
 
 use Exporter qw/ import /;
 our @EXPORT_OK = qw/ get_choices

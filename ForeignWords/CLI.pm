@@ -1,4 +1,4 @@
-package cli;
+package ForeignWords::CLI;
 use strict;
 use warnings FATAL => 'all';
 use utf8;
@@ -9,8 +9,8 @@ our @EXPORT_OK = qw/ cli_main /;
 
 use Term::ReadLine;
 
-use utils qw/ assert /;
-use words qw/ get_choices
+use ForeignWords::Utils qw/ assert /;
+use ForeignWords::Words qw/ get_choices
               get_batch
               add_word
               NUMBER_OF_CHOICES_IN_QUESTION /;

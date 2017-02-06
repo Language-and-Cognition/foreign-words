@@ -7,7 +7,6 @@ use File::Basename qw/ dirname /;
 use Cwd qw/ abs_path /;
 
 use lib dirname(dirname abs_path $0);
-use cli qw/ cli_main /;
-use utils qw/ assert /;
+use ForeignWords::CLI qw/ cli_main /;
 
 cli_main();

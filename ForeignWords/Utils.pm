@@ -1,4 +1,4 @@
-package utils;
+package ForeignWords::Utils;
 use strict;
 use warnings FATAL => 'all';
 
