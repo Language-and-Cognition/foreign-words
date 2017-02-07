@@ -9,7 +9,7 @@ our @EXPORT_OK = qw/ cli_main /;
 
 use Term::ReadLine;
 
-use ForeignWords::Utils qw/ assert /;
+use ForeignWords::Utils qw/ assert trim /;
 use ForeignWords::Words qw/ get_choices
               get_batch
               add_word
@@ -46,10 +46,19 @@ sub ask_word_to_translation {
 
         assert(defined $right_choice_number, '$right_choice_number IS UNDEFINED');
 
+        # TODO duplicated code
         my $choice;
-        chomp($choice = <STDIN>);
-
-        # TODO Filter user input
+        print "Enter a number\n";
+        while (1) {
+            exit 0 unless defined($choice = <STDIN>);
+            $choice = trim $choice;
+            if ($choice =~ m/^\d+$/) {
+                last;
+            } else {
+                print "Enter a number\n";
+                next;
+            }
+        }
         if ($choice == $right_choice_number) {
             print "CORRECT!\n\n";
         } else {
@@ -75,8 +84,17 @@ sub ask_translation_to_word {
         assert(defined $right_choice_number, '$right_choice_number IS UNDEFINED');
 
         my $choice;
-        chomp($choice = <STDIN>);
-
+        print "Enter a number\n";
+        while (1) {
+            exit 0 unless defined($choice = <STDIN>);
+            $choice = trim $choice;
+            if ($choice =~ m/^\d+$/) {
+                last;
+            } else {
+                print "Enter a number\n";
+                next;
+            }
+        }
         if ($choice == $right_choice_number) {
             print "CORRECT!\n\n";
         } else {
