@@ -9,7 +9,7 @@ our @EXPORT_OK = qw/ cli_main /;
 
 use Term::ReadLine;
 
-use ForeignWords::Utils qw/ assert trim /;
+use ForeignWords::Utils qw/ assert trim slow_print /;
 use ForeignWords::Words qw/ get_choices
               get_batch
               add_word
@@ -26,7 +26,7 @@ sub cli_main {
         } elsif ($input eq 'add') {
             _add_word($term);
         } else {
-            print "Command not found\n";
+            slow_print "Command not found\n";
         }
     }
 }
@@ -35,7 +35,7 @@ sub ask_word_to_translation {
     my ($words) = @_;
     my $right_choice_number;
     for my $word (keys %$words) {
-        print "$word\n\n";
+        slow_print "$word\n\n";
         my %choices = get_choices($words, $word, NUMBER_OF_CHOICES_IN_QUESTION);
         my @keys = keys(%choices);
         while (my ($i, $key) = each @keys) {
@@ -56,7 +56,7 @@ sub ask_translation_to_word {
     my $right_choice_number;
     for my $word (keys %$words) {
         my $translations = $words->{$word};
-        print "@$translations\n\n";
+        slow_print "@$translations\n\n";
         my %choices = get_choices($words, $word, NUMBER_OF_CHOICES_IN_QUESTION);
         my @keys = keys(%choices);
         while (my ($i, $key) = each @keys) {
@@ -73,16 +73,16 @@ sub ask_translation_to_word {
 
 sub _add_word {
     my ($term) = @_;
-    print "Enter word in foreign language\n";
+    slow_print "Enter word in foreign language\n";
     my $word = $term->readline('. ');
 
-    print "Enter translations (comma separated)\n";
+    slow_print "Enter translations (comma separated)\n";
     my $translation = $term->readline('. ');
     add_word($word, $translation);
 }
 
 sub show_help {
-    print <<"DOC"
+    slow_print <<"DOC"
 help:   show this message
 learn:  learn words
 add:    add word
@@ -91,14 +91,14 @@ DOC
 
 sub _get_numerical_choice {
     my $choice;
-    print "Enter a number\n";
+    slow_print "Enter a number\n";
     while (1) {
         exit 0 unless defined($choice = <STDIN>);
         $choice = trim $choice;
         if ($choice =~ m/^\d+$/) {
             last;
         } else {
-            print "Enter a number\n";
+            slow_print "Enter a number\n";
             next;
         }
     }
@@ -108,10 +108,10 @@ sub _get_numerical_choice {
 sub _check_numerical_answer {
     my ($user_number, $right_number, $answer) = @_;
     if ($user_number == $right_number) {
-            print "CORRECT!\n\n";
+            slow_print "CORRECT!\n\n";
         } else {
-            print "INCORRECT! RIGHT ANSWER IS:\n";
-            print "$answer\n\n";
+            slow_print "INCORRECT! RIGHT ANSWER IS:\n";
+            slow_print "$answer\n\n";
         }
 }
 
