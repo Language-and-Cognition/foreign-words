@@ -46,25 +46,8 @@ sub ask_word_to_translation {
 
         assert(defined $right_choice_number, '$right_choice_number IS UNDEFINED');
 
-        # TODO duplicated code
-        my $choice;
-        print "Enter a number\n";
-        while (1) {
-            exit 0 unless defined($choice = <STDIN>);
-            $choice = trim $choice;
-            if ($choice =~ m/^\d+$/) {
-                last;
-            } else {
-                print "Enter a number\n";
-                next;
-            }
-        }
-        if ($choice == $right_choice_number) {
-            print "CORRECT!\n\n";
-        } else {
-            print "INCORRECT! RIGHT ANSWER IS:\n";
-            print "@{ $choices{$word} }\n\n";
-        }
+        my $choice = _get_numerical_choice();
+        _check_numerical_answer($choice, $right_choice_number, $word);
     }
 }
 
@@ -83,24 +66,8 @@ sub ask_translation_to_word {
 
         assert(defined $right_choice_number, '$right_choice_number IS UNDEFINED');
 
-        my $choice;
-        print "Enter a number\n";
-        while (1) {
-            exit 0 unless defined($choice = <STDIN>);
-            $choice = trim $choice;
-            if ($choice =~ m/^\d+$/) {
-                last;
-            } else {
-                print "Enter a number\n";
-                next;
-            }
-        }
-        if ($choice == $right_choice_number) {
-            print "CORRECT!\n\n";
-        } else {
-            print "INCORRECT! RIGHT ANSWER IS:\n";
-            print "$word\n\n";
-        }
+        my $choice = _get_numerical_choice();
+        _check_numerical_answer($choice, $right_choice_number, $word);
     }
 }
 
@@ -120,6 +87,32 @@ help:   show this message
 learn:  learn words
 add:    add word
 DOC
+}
+
+sub _get_numerical_choice {
+    my $choice;
+    print "Enter a number\n";
+    while (1) {
+        exit 0 unless defined($choice = <STDIN>);
+        $choice = trim $choice;
+        if ($choice =~ m/^\d+$/) {
+            last;
+        } else {
+            print "Enter a number\n";
+            next;
+        }
+    }
+    return $choice;
+}
+
+sub _check_numerical_answer {
+    my ($user_number, $right_number, $answer) = @_;
+    if ($user_number == $right_number) {
+            print "CORRECT!\n\n";
+        } else {
+            print "INCORRECT! RIGHT ANSWER IS:\n";
+            print "$answer\n\n";
+        }
 }
 
 1;
