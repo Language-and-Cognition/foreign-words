@@ -1,11 +1,12 @@
 package ForeignWords::Words;
 use strict;
 use warnings FATAL => 'all';
+use utf8;
 
 use DBI;
 use JSON qw/ encode_json decode_json /;
 
-use  ForeignWords::Utils qw/ assert trim current_time parse_time /;
+use ForeignWords::Utils qw/ assert trim current_time parse_time /;
 
 use Exporter qw/ import /;
 our @EXPORT_OK = qw/ get_choices
@@ -22,7 +23,6 @@ use constant {
 use constant LANGUAGE => 'English';
 
 assert(NUMBER_OF_WORDS_IN_BATCH >= NUMBER_OF_CHOICES_IN_QUESTION, "CHOICES > BATCH");
-
 
 sub get_words {
     # TODO make class from in order to reuse connection
@@ -54,15 +54,23 @@ sub add_word {
 
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
+    $DBI::err && die $DBI::errstr;
     $dbh->do("INSERT INTO $table (word, translation, progress, last_success_time) VALUES (?, ?, 0, ?)",
-        undef, $word, $translation, parse_time('1970-01-01T00:00:00'));
+        undef, $word, $translation, current_time());
 }
 
-sub update_word_success_time {
+sub update_word_progress {
     my ($word) = @_;
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
     $dbh->do("UPDATE $table SET progress = progress + 1, last_success_time = ? WHERE word = ?", undef, current_time(), $word);
+}
+
+sub reset_word_progress {
+    my ($word) = @_;
+    my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
+    my $table = LANGUAGE;
+    $dbh->do("UPDATE $table SET progress = 0, last_success_time = ? WHERE word = ?", undef, current_time(), $word);
 }
 
 sub _make_json_array_from_translation {
