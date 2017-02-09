@@ -1,4 +1,5 @@
 package ForeignWords::Utils;
+use English;
 use strict;
 use warnings FATAL => 'all';
 
@@ -38,14 +39,14 @@ sub parse_time {
 }
 
 sub slow_print {
-    my $old_value = $|;
-    $| = 1;
+    my $old_value = $OUTPUT_AUTOFLUSH;
+    $OUTPUT_AUTOFLUSH = 1;
     my ($text) = @_;
     for my $c (split //, $text) {
         print "$c";
         usleep 0.9e4;
     }
-    $| = $old_value;
+    $OUTPUT_AUTOFLUSH = $old_value;
 }
 
 1;
