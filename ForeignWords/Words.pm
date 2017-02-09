@@ -40,8 +40,7 @@ sub get_words {
 sub get_batch {
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
-    # TODO take last learning time into account
-    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress, last_success_time FROM $table ORDER BY progress LIMIT ?", undef, NUMBER_OF_WORDS_IN_BATCH);
+    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress, last_success_time FROM $table ORDER BY progress, last_success_time LIMIT ?", undef, NUMBER_OF_WORDS_IN_BATCH);
     my %words;
     for my $row (@$rows) {
         $words{$row->[0]} = decode_json($row->[1]);
