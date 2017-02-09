@@ -10,17 +10,17 @@ our @EXPORT_OK = qw/ cli_main /;
 use Term::ReadLine;
 
 use ForeignWords::Utils qw/ assert trim slow_print /;
-use ForeignWords::Words qw/ get_choices
-              get_batch
-              add_word
-              NUMBER_OF_CHOICES_IN_QUESTION /;
+use ForeignWords::Words qw/ add_word
+                            get_batch
+                            get_choices
+                            update_word_progress
+                            NUMBER_OF_CHOICES_IN_QUESTION /;
 
 sub cli_main {
-    my $words = get_batch;
     my $term = Term::ReadLine->new('foreign words', \*STDIN, \*STDOUT);
     while (defined(my $input = $term->readline('> '))) {
         if ($input eq 'learn') {
-            ask_translation_to_word($words);
+            learn();
         } elsif ($input eq 'help') {
             show_help();
         } elsif ($input eq 'add') {
@@ -31,8 +31,23 @@ sub cli_main {
     }
 }
 
+sub learn {
+    my $words = get_batch;
+    my %score;
+    for my $word (keys %$words) {
+        $score{$word} = 0;
+    }
+    ask_translation_to_word($words, \%score);
+    ask_word_to_translation($words, \%score);
+    for my $word (keys %score) {
+        if ($score{$word} == 2) {
+            update_word_progress($word);
+        }
+    }
+}
+
 sub ask_word_to_translation {
-    my ($words) = @_;
+    my ($words, $score) = @_;
     my $right_choice_number;
     for my $word (keys %$words) {
         slow_print "$word\n\n";
@@ -47,12 +62,13 @@ sub ask_word_to_translation {
         assert(defined $right_choice_number, '$right_choice_number IS UNDEFINED');
 
         my $choice = _get_numerical_choice();
-        _check_numerical_answer($choice, $right_choice_number, $word);
+        my $success = _check_numerical_answer($choice, $right_choice_number, $word);
+        $score->{$word} += 1 if $success;
     }
 }
 
 sub ask_translation_to_word {
-    my ($words) = @_;
+    my ($words, $score) = @_;
     my $right_choice_number;
     for my $word (keys %$words) {
         my $translations = $words->{$word};
@@ -67,7 +83,8 @@ sub ask_translation_to_word {
         assert(defined $right_choice_number, '$right_choice_number IS UNDEFINED');
 
         my $choice = _get_numerical_choice();
-        _check_numerical_answer($choice, $right_choice_number, $word);
+        my $success = _check_numerical_answer($choice, $right_choice_number, $word);
+        $score->{$word} += 1 if $success;
     }
 }
 
@@ -107,12 +124,14 @@ sub _get_numerical_choice {
 
 sub _check_numerical_answer {
     my ($user_number, $right_number, $answer) = @_;
-    if ($user_number == $right_number) {
-            slow_print "CORRECT!\n\n";
-        } else {
-            slow_print "INCORRECT! RIGHT ANSWER IS:\n";
-            slow_print "$answer\n\n";
-        }
+    my $success = $user_number == $right_number;
+    if ($success) {
+        slow_print "CORRECT!\n\n";
+    } else {
+        slow_print "INCORRECT! RIGHT ANSWER IS:\n";
+        slow_print "$answer\n\n";
+    }
+    return $success;
 }
 
 1;

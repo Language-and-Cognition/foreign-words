@@ -13,6 +13,7 @@ our @EXPORT_OK = qw/ get_choices
                      get_batch
                      get_words
                      add_word
+                     update_word_progress
                      NUMBER_OF_CHOICES_IN_QUESTION
                      NUMBER_OF_WORDS_IN_BATCH /;
 
