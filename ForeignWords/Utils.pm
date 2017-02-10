@@ -17,6 +17,7 @@ sub assert {
 
     my ($condition, $error_text) = @_;
     unless ($condition) {
+        # TODO Add file name
         my (undef, undef, $line) = caller;
         print STDERR "WRONG ASSERTION ON LINE $line\n";
         die $error_text;
@@ -29,6 +30,7 @@ sub trim {
 }
 
 sub current_time {
+    # TODO This will not work as expected after 2038
     return DateTime->now()->epoch();
 }
 

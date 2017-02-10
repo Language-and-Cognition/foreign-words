@@ -18,11 +18,14 @@ our @EXPORT_OK = qw/ get_choices
                      NUMBER_OF_CHOICES_IN_QUESTION
                      NUMBER_OF_WORDS_IN_BATCH /;
 
+# TODO Move all constants to a new file
 use constant {
     NUMBER_OF_CHOICES_IN_QUESTION => 4,
     NUMBER_OF_WORDS_IN_BATCH => 5,
 };
 use constant LANGUAGE => 'English';
+use constant MEMORIZING_FACTOR => 3;
+use constant DAY => 60 * 60 * 24;
 
 assert(NUMBER_OF_WORDS_IN_BATCH >= NUMBER_OF_CHOICES_IN_QUESTION, "CHOICES > BATCH");
 
@@ -40,11 +43,25 @@ sub get_words {
 
 sub get_batch {
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
+    # TODO It should be a row, not a table name
     my $table = LANGUAGE;
-    my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress, last_success_time FROM $table ORDER BY progress, last_success_time LIMIT ?", undef, NUMBER_OF_WORDS_IN_BATCH);
+    my $sql = <<"    --";
+        SELECT word, translation, progress, last_success_time
+        FROM $table
+        ORDER BY progress, last_success_time
+    --
+    my $rows = $dbh->selectall_arrayref($sql);
     my %words;
-    for my $row (@$rows) {
-        $words{$row->[0]} = decode_json($row->[1]);
+    my $limit = 0;
+    for (my $i = 0; $i < @$rows and $limit < NUMBER_OF_WORDS_IN_BATCH; $i++) {
+        my $row = $rows->[$i];
+        my ($word, $translation, $progress, $last_success_time) = @$row;
+        # TODO Change frequency of learning
+        # Rihgt now it's a geometric progression but maybe it should be exponent function
+        if (current_time() >= $last_success_time + MEMORIZING_FACTOR * DAY * $progress ) {
+            $words{$word} = decode_json($translation);
+            $limit++;
+        }
     }
     return \%words;
 }
@@ -72,14 +89,13 @@ sub reset_word_progress {
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
     my $sql = <<"    --";
-    UPDATE $table
-    SET progress = 0,
-        last_success_time = ?
-    WHERE word = ?
+        UPDATE $table
+        SET progress = 0,
+            last_success_time = ?
+        WHERE word = ?
     --
-    my $seconds_in_24_hours = 60 * 60 * 24;
     # Put the word to the end of the learning queue
-    $dbh->do($sql, undef, current_time() + $seconds_in_24_hours, $word);
+    $dbh->do($sql, undef, current_time() + DAY, $word);
 }
 
 sub _make_json_array_from_translation {

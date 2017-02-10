@@ -34,6 +34,7 @@ sub cli_main {
 
 sub learn {
     my $words = get_batch;
+    # TODO What if there not enough words to make a batch?
     my %score;
     for my $word (keys %$words) {
         $score{$word} = 0;
