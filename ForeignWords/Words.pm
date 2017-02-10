@@ -13,6 +13,7 @@ our @EXPORT_OK = qw/ get_choices
                      get_batch
                      get_words
                      add_word
+                     reset_word_progress
                      update_word_progress
                      NUMBER_OF_CHOICES_IN_QUESTION
                      NUMBER_OF_WORDS_IN_BATCH /;
@@ -70,7 +71,15 @@ sub reset_word_progress {
     my ($word) = @_;
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
-    $dbh->do("UPDATE $table SET progress = 0, last_success_time = ? WHERE word = ?", undef, current_time(), $word);
+    my $sql = <<"    --";
+    UPDATE $table
+    SET progress = 0,
+        last_success_time = ?
+    WHERE word = ?
+    --
+    my $seconds_in_24_hours = 60 * 60 * 24;
+    # Put the word to the end of the learning queue
+    $dbh->do($sql, undef, current_time() + $seconds_in_24_hours, $word);
 }
 
 sub _make_json_array_from_translation {

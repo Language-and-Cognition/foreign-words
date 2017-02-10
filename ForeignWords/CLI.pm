@@ -13,6 +13,7 @@ use ForeignWords::Utils qw/ assert trim slow_print /;
 use ForeignWords::Words qw/ add_word
                             get_batch
                             get_choices
+                            reset_word_progress
                             update_word_progress
                             NUMBER_OF_CHOICES_IN_QUESTION /;
 
@@ -42,6 +43,8 @@ sub learn {
     for my $word (keys %score) {
         if ($score{$word} == 2) {
             update_word_progress($word);
+        } else {
+            reset_word_progress($word);
         }
     }
 }
