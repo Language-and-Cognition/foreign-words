@@ -29,12 +29,12 @@ sub trim {
 }
 
 sub current_time {
-    return DateTime->now()->iso8601();
+    return DateTime->now()->epoch();
 }
 
 sub parse_time {
     my ($str) = @_;
-    my $strp = DateTime::Format::Strptime->new(pattern => '%FT%T', time_zone => 'UTC');
+    my $strp = DateTime::Format::Strptime->new(pattern => '%s', time_zone => 'UTC');
     return $strp->parse_datetime($str);
 }
 
