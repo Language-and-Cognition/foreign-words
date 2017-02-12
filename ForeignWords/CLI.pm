@@ -10,12 +10,9 @@ our @EXPORT_OK = qw/ cli_main /;
 use Term::ReadLine;
 
 use ForeignWords::Utils qw/ assert trim slow_print /;
-use ForeignWords::Words qw/ add_word
-                            get_batch
-                            get_choices
-                            reset_word_progress
-                            update_word_progress
-                            NUMBER_OF_CHOICES_IN_QUESTION /;
+use ForeignWords::Words;
+
+my $db = ForeignWords::Words->new();
 
 sub cli_main {
     my $term = Term::ReadLine->new('foreign words', \*STDIN, \*STDOUT);
@@ -33,7 +30,7 @@ sub cli_main {
 }
 
 sub learn {
-    my $words = get_batch;
+    my $words = $db->get_batch;
     # TODO What if there not enough words to make a batch?
     my %score;
     for my $word (keys %$words) {
@@ -43,9 +40,9 @@ sub learn {
     ask_word_to_translation($words, \%score);
     for my $word (keys %score) {
         if ($score{$word} == 2) {
-            update_word_progress($word);
+            $db->update_word_progress($word);
         } else {
-            reset_word_progress($word);
+            $db->reset_word_progress($word);
         }
     }
 }
@@ -55,7 +52,7 @@ sub ask_word_to_translation {
     my $right_choice_number;
     for my $word (keys %$words) {
         slow_print "$word\n\n";
-        my %choices = get_choices($words, $word, NUMBER_OF_CHOICES_IN_QUESTION);
+        my %choices = $db->get_choices($words, $word);
         my @keys = keys(%choices);
         while (my ($i, $key) = each @keys) {
             my $translations = $choices{$key};
@@ -77,7 +74,7 @@ sub ask_translation_to_word {
     for my $word (keys %$words) {
         my $translations = $words->{$word};
         slow_print "@$translations\n\n";
-        my %choices = get_choices($words, $word, NUMBER_OF_CHOICES_IN_QUESTION);
+        my %choices = $db->get_choices($words, $word);
         my @keys = keys(%choices);
         while (my ($i, $key) = each @keys) {
             printf "%d. %s\n", $i+1, "$key";
@@ -99,7 +96,7 @@ sub _add_word {
 
     slow_print "Enter translations (comma separated)\n";
     my $translation = $term->readline('. ');
-    add_word($word, $translation);
+    $db->add_word($word, $translation);
 }
 
 sub show_help {

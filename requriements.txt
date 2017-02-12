@@ -4,3 +4,4 @@ DateTime::Format::Strptime
 DBI
 DBD::SQLite
 JSON
+Moose

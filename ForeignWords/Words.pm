@@ -8,7 +8,10 @@ use JSON qw/ encode_json decode_json /;
 
 use ForeignWords::Utils qw/ assert trim current_time parse_time /;
 
+use Moose;
+
 use Exporter qw/ import /;
+# TODO Remove all exports that are not needed
 our @EXPORT_OK = qw/ get_choices
                      get_batch
                      get_words
@@ -30,7 +33,7 @@ use constant DAY => 60 * 60 * 24;
 assert(NUMBER_OF_WORDS_IN_BATCH >= NUMBER_OF_CHOICES_IN_QUESTION, "CHOICES > BATCH");
 
 sub get_words {
-    # TODO make class from in order to reuse connection
+    # TODO make dbh a property
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
     my $rows = $dbh->selectall_arrayref("SELECT word, translation, progress, last_success_time FROM $table");
@@ -67,8 +70,8 @@ sub get_batch {
 }
 
 sub add_word {
-    my ($word, $translation) = @_;
-    $translation = _make_json_array_from_translation($translation);
+    my ($self, $word, $translation) = @_;
+    $translation = $self->_make_json_array_from_translation($translation);
 
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
@@ -78,14 +81,14 @@ sub add_word {
 }
 
 sub update_word_progress {
-    my ($word) = @_;
+    my ($self, $word) = @_;
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
     $dbh->do("UPDATE $table SET progress = progress + 1, last_success_time = ? WHERE word = ?", undef, current_time(), $word);
 }
 
 sub reset_word_progress {
-    my ($word) = @_;
+    my ($self, $word) = @_;
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     my $table = LANGUAGE;
     my $sql = <<"    --";
@@ -99,15 +102,15 @@ sub reset_word_progress {
 }
 
 sub _make_json_array_from_translation {
-    my ($translation_raw) = @_;
+    my ($self, $translation_raw) = @_;
     my @translations = map {trim $_} split(',', $translation_raw);
     return encode_json \@translations;
 }
 
 sub get_choices {
-    my ($words, $right_word, $how_many) = @_;
+    my ($self, $words, $right_word) = @_;
 
-    assert($how_many <= keys %$words, "NOT ENOUGH WORDS");
+    assert(NUMBER_OF_CHOICES_IN_QUESTION <= keys %$words, "NOT ENOUGH WORDS");
     assert(exists $words->{$right_word}, "RIGHT WORD IS NOT IN WORDS");
 
     my %result;
@@ -123,7 +126,7 @@ sub get_choices {
         $result{$word} = $translations;
         $count++;
 
-        last if $count == $how_many;
+        last if $count == NUMBER_OF_CHOICES_IN_QUESTION;
     }
 
     return %result;
