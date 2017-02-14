@@ -18,8 +18,8 @@ sub assert {
     my ($condition, $error_text) = @_;
     unless ($condition) {
         # TODO Add file name
-        my (undef, undef, $line) = caller;
-        print STDERR "WRONG ASSERTION ON LINE $line\n";
+        my (undef, $filename, $line) = caller;
+        print STDERR "WRONG ASSERTION AT $filename:$line\n";
         die $error_text;
     }
 }
