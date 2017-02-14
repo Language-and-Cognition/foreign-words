@@ -17,12 +17,15 @@ my $db = ForeignWords::Words->new();
 sub cli_main {
     my $term = Term::ReadLine->new('foreign words', \*STDIN, \*STDOUT);
     while (defined(my $input = $term->readline('> '))) {
+        $input = trim $input;
         if ($input eq 'learn') {
             learn();
         } elsif ($input eq 'help') {
             show_help();
         } elsif ($input eq 'add') {
             _add_word($term);
+        } elsif ($input eq '') {
+            # NOP
         } else {
             slow_print "Command not found\n";
         }
