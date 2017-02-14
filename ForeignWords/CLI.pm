@@ -9,6 +9,9 @@ our @EXPORT_OK = qw/ cli_main /;
 
 use Term::ReadLine;
 
+use ForeignWords::Constants qw /
+    NUMBER_OF_WORDS_IN_BATCH
+    /;
 use ForeignWords::Utils qw/ assert trim slow_print /;
 use ForeignWords::Words;
 
@@ -26,6 +29,7 @@ sub cli_main {
             _add_word($term);
         } elsif ($input eq '') {
             # NOP
+            # TODO Add progress view
         } else {
             slow_print "Command not found\n";
         }
@@ -34,7 +38,11 @@ sub cli_main {
 
 sub learn {
     my $words = $db->get_batch;
-    # TODO What if there not enough words to make a batch?
+    if (keys %$words < NUMBER_OF_WORDS_IN_BATCH) {
+        slow_print "Not enough words for a new batch\n";
+        slow_print "Please add new words\n";
+        return
+    }
     my %score;
     for my $word (keys %$words) {
         $score{$word} = 0;
