@@ -7,26 +7,15 @@ use DBI;
 use JSON qw/ encode_json decode_json /;
 
 use ForeignWords::Constants qw /
-                                    NUMBER_OF_WORDS_IN_BATCH
-                                    NUMBER_OF_CHOICES_IN_QUESTION
-                                    LANGUAGE
-                                    MEMORIZING_FACTOR
-                                    DAY
-                               /;
+    NUMBER_OF_WORDS_IN_BATCH
+    NUMBER_OF_CHOICES_IN_QUESTION
+    LANGUAGE
+    MEMORIZING_FACTOR
+    DAY
+/;
 use ForeignWords::Utils qw/ assert trim current_time parse_time /;
 
 use Moose;
-
-use Exporter qw/ import /;
-
-# TODO Remove all exports that are not needed
-our @EXPORT_OK = qw/ get_choices
-                     get_batch
-                     get_words
-                     add_word
-                     reset_word_progress
-                     update_word_progress
-                    /;
 
 assert(NUMBER_OF_WORDS_IN_BATCH >= NUMBER_OF_CHOICES_IN_QUESTION, "CHOICES > BATCH");
 
