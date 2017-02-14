@@ -38,7 +38,7 @@ sub get_batch {
     my $sql = <<"    --";
         SELECT word, translation, progress, last_success_time
         FROM $table
-        ORDER BY progress, last_success_time
+        ORDER BY progress DESC
     --
     my $rows = $dbh->selectall_arrayref($sql);
     my %words;
@@ -84,8 +84,7 @@ sub reset_word_progress {
             last_success_time = ?
         WHERE word = ?
     --
-    # Put the word to the end of the learning queue
-    $dbh->do($sql, undef, current_time() + DAY, $word);
+    $dbh->do($sql, undef, current_time(), $word);
 }
 
 sub _make_json_array_from_translation {
