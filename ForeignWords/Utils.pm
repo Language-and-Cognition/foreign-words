@@ -46,7 +46,7 @@ sub slow_print {
     my ($text) = @_;
     for my $c (split //, $text) {
         print "$c";
-        usleep 0.9e4;
+        usleep 0.95e4 unless ($c =~ m/\s/);
     }
     $OUTPUT_AUTOFLUSH = $old_value;
 }
