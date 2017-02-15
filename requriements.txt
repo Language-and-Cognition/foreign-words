@@ -5,3 +5,4 @@ DBI
 DBD::SQLite
 JSON
 Moose
+Text::SimpleTable::AutoWidth
