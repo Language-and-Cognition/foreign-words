@@ -31,6 +31,28 @@ sub get_words {
     return \%words;
 }
 
+sub get_active_words {
+    shift;
+    my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
+    my $table = LANGUAGE;
+    my $sql = <<"    --";
+        SELECT word,
+               translation,
+               progress,
+               last_success_time
+        FROM $table
+        WHERE last_success_time != 0
+        ORDER BY progress DESC
+    --
+    my $rows = $dbh->selectall_arrayref($sql);
+    my %words;
+    for my $row (@$rows) {
+        $row->[1] = decode_json($row->[1]);
+        push(@{ $words{$row->[0]} }, $row->[$_]) for (1..3);
+    }
+    return \%words;
+}
+
 sub get_batch {
     my $dbh = DBI->connect('DBI:SQLite:dbname=words.db', '', '');
     # TODO It should be a row, not a table name

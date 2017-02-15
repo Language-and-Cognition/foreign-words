@@ -8,6 +8,7 @@ use Exporter qw/ import /;
 our @EXPORT_OK = qw/ cli_main /;
 
 use Term::ReadLine;
+use Text::SimpleTable::AutoWidth;
 
 use ForeignWords::Constants qw /
     NUMBER_OF_WORDS_IN_BATCH
@@ -26,7 +27,9 @@ sub cli_main {
         } elsif ($input eq 'help') {
             show_help();
         } elsif ($input eq 'add') {
-            _add_word($term);
+            add_word($term);
+        } elsif ($input eq 'progress') {
+            show_progress();
         } elsif ($input eq '') {
             # NOP
             # TODO Add progress view
@@ -100,7 +103,17 @@ sub ask_translation_to_word {
     }
 }
 
-sub _add_word {
+sub show_progress {
+    my $words = $db->get_active_words;
+    my $table = Text::SimpleTable::AutoWidth->new();
+    $table->captions(['Word', 'Translation', 'Progress', 'Last Learning Time']);
+    for my $word (keys %{ $words }) {
+        $table->row($word, join(', ', @{ $words->{$word}[0] }), $words->{$word}[1], $words->{$word}[2]);
+    }
+    slow_print $table->draw();
+}
+
+sub add_word {
     my ($term) = @_;
     slow_print "Enter word in foreign language\n";
     my $word = $term->readline('. ');
