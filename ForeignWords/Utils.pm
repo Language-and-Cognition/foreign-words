@@ -7,8 +7,20 @@ use DateTime;
 use DateTime::Format::Strptime;
 use Time::HiRes qw / usleep /;
 
+use ForeignWords::Constants qw/
+    DAY
+    MEMORIZING_FACTOR
+    /;
+
 use Exporter qw/ import /;
-our @EXPORT_OK = qw/ assert trim current_time parse_time slow_print /;
+our @EXPORT_OK = qw/
+    assert
+    current_time
+    get_next_lerning_time
+    parse_time
+    slow_print
+    trim
+    /;
 
 my $DEBUG = 1;
 
@@ -37,6 +49,14 @@ sub parse_time {
     my ($str) = @_;
     my $strp = DateTime::Format::Strptime->new(pattern => '%s', time_zone => 'UTC');
     return $strp->parse_datetime($str);
+}
+
+sub get_next_lerning_time {
+    my ($last_success_time, $progress) = @_;
+    if ($progress == 0) {
+        return $last_success_time;
+    }
+    return $last_success_time + (MEMORIZING_FACTOR ** ($progress - 1)) * DAY;
 }
 
 sub slow_print {

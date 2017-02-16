@@ -7,7 +7,7 @@ use constant {
     NUMBER_OF_WORDS_IN_BATCH => 5,
 };
 use constant LANGUAGE => 'English';
-use constant MEMORIZING_FACTOR => 3;
+use constant MEMORIZING_FACTOR => 2;
 use constant DAY => 60 * 60 * 24;
 
 use Exporter qw/ import /;

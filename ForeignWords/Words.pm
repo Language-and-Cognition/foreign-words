@@ -10,10 +10,15 @@ use ForeignWords::Constants qw /
     NUMBER_OF_WORDS_IN_BATCH
     NUMBER_OF_CHOICES_IN_QUESTION
     LANGUAGE
-    MEMORIZING_FACTOR
-    DAY
 /;
-use ForeignWords::Utils qw/ assert trim current_time parse_time /;
+
+use ForeignWords::Utils qw/
+    assert
+    get_next_lerning_time
+    current_time
+    parse_time
+    trim
+    /;
 
 use Moose;
 
@@ -68,9 +73,7 @@ sub get_batch {
     for (my $i = 0; $i < @$rows and $limit < NUMBER_OF_WORDS_IN_BATCH; $i++) {
         my $row = $rows->[$i];
         my ($word, $translation, $progress, $last_success_time) = @$row;
-        # TODO Change frequency of learning
-        # Rihgt now it's a geometric progression but maybe it should be exponent function
-        if (current_time() >= $last_success_time + MEMORIZING_FACTOR * DAY * $progress ) {
+        if (current_time() >= get_next_lerning_time($last_success_time, $progress) ) {
             $words{$word} = decode_json($translation);
             $limit++;
         }
