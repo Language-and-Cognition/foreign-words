@@ -32,7 +32,6 @@ sub cli_main {
             show_progress();
         } elsif ($input eq '') {
             # NOP
-            # TODO Add progress view
         } else {
             slow_print "Command not found\n";
         }
